@@ -12,5 +12,8 @@ Press left and right button at the same time to reset the map and square positio
 # sum general info
 
 Number in the middle of the screen represents current Y position of the square(temporary)
-Square starts at 1,1 and moves 16 in any direction, Square's position limits are: x: (1+16 * 7) = 113 and y: (1+16 * 9) = 145. Square is 15 by 15 and map grid is 16 by 16.
+
+Square starts at 1,1 and moves 16 in any direction, Square's position limits are: x: (1+16 * 7) = 113 and y: (1+16 * 9) = 145. 
+
+Square is 15 by 15 and map grid is 16 by 16.
 Map is 8 16x16 squares wide and 10 squares long.
