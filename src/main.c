@@ -11,6 +11,7 @@ void setupIO();
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py);
 void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
+void resetGrid(int **);
 
 volatile uint32_t milliseconds;
 
@@ -39,6 +40,9 @@ int main()
 {
 	int x = 1;
 	int y = 1;
+	int teachDir = 1;
+	int grid[7][9];
+	resetGrid(grid);
 //	int hinverted = 0;
 //	int vinverted = 0;
 /*		int toggle = 0;
@@ -60,10 +64,45 @@ int main()
 	delay(50);
 	while(1){
 
+		// print current grid arrangement
+		for (int i=0 ; i<7 ; i++) {
+			for (int j=0 ; j<9 ; j++) {
+				switch(grid[i][j]) {
+					case 1:
+						switch (teachDir) {
+							case 1:
+							default:
+								putImage(x,y,15,15,teachV, 0, 1);
+								break;
+							case 2:
+								putImage(x,y,15,15,teachH, 1, 0);
+								break;
+							case 3:
+								putImage(x,y,15,15,teachV, 0, 0);
+								break;
+							case 4:
+								putImage(x,y,15,15,teachH, 0, 0);
+								break;
+						}
+						break;
+					case 2:
+						putImage(i,j,15,15,student, 0, 0);
+						break;
+					/*case 3:
+						break;*/
+					case 0:
+					default:
+						fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+						break;
+				}
+			}
+		}
+
 		printNumber(milliseconds, 60, 75, RGBToWord(225,225,225), RGBToWord(0,0,0));
 		if(uppressed() && (milliseconds%MVE_DELAY==0))
 		{
 			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			teachDir = 1;
 			y = y - 16;
 			if (y < 1)
 				y = 1;
@@ -73,6 +112,7 @@ int main()
 		if(downpressed() && (milliseconds%MVE_DELAY==0))
 		{
 			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			teachDir = 3;
 			y = y + 16;
 			if (y > 145)
 				y = 145;
@@ -81,6 +121,7 @@ int main()
 		if (leftpressed() && (milliseconds%MVE_DELAY==0))
 		{
 			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			teachDir = 4;
 			x = x - 16;
 			if (x < 1)
 				x = 1;
@@ -89,6 +130,7 @@ int main()
 		if (rightpressed() && (milliseconds%MVE_DELAY==0))
 		{
 			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			teachDir = 2;
 			x = x + 16;
 			if (x > 113)
 				x = 113;
@@ -305,4 +347,12 @@ void setupIO()
 	enablePullUp(GPIOB,5);
 	enablePullUp(GPIOA,11);
 	enablePullUp(GPIOA,8);
+}
+
+void resetGrid(int **grid) {
+	for (int i=0 ; i<7 ; i++) {
+		for (int j=0 ; j<9 ; j++) {
+			grid[i][j] = 0;
+		}
+	}
 }
