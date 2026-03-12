@@ -11,7 +11,7 @@ void setupIO();
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py);
 void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
-void resetGrid(int **);
+void resetGrid(uint32_t **grid);
 
 volatile uint32_t milliseconds;
 
@@ -38,11 +38,11 @@ int uppressed();
 
 int main()
 {
-	int x = 1;
-	int y = 1;
-	int teachDir = 1;
-	uint32_t grid[7][9];
-	resetGrid(grid);
+	uint32_t x = 1;
+	uint32_t y = 1;
+	uint32_t teachDir = 1;
+	uint32_t grid[8][10];
+	resetGrid((uint32_t **)grid);
 //	int hinverted = 0;
 //	int vinverted = 0;
 /*		int toggle = 0;
@@ -56,7 +56,7 @@ int main()
 	initSysTick();
 	setupIO();
 //	putImage(20,80,12,16,dg1,0,0);
-	
+
 //putImage(0,10,20,20,student,0,1);
 	drawmap();
 		
@@ -350,9 +350,9 @@ void setupIO()
 	enablePullUp(GPIOA,8);
 }
 
-void resetGrid(int **grid) {
-	for (int i=0 ; i<7 ; i++) {
-		for (int j=0 ; j<9 ; j++) {
+void resetGrid(uint32_t **grid) {
+	for (uint32_t i=0 ; i<7 ; i++) {
+		for (uint32_t j=0 ; j<9 ; j++) {
 			grid[i][j] = 0;
 		}
 	}
