@@ -41,7 +41,7 @@ int main()
 	int x = 1;
 	int y = 1;
 	int teachDir = 1;
-	int grid[7][9];
+	uint32_t grid[7][9];
 	resetGrid(grid);
 //	int hinverted = 0;
 //	int vinverted = 0;
@@ -62,40 +62,41 @@ int main()
 		
 	fillRectangle(x,y,15,15,RGBToWord(0,225,0));
 	delay(50);
+	grid[3][3] = 1;
 	while(1){
 
 		// print current grid arrangement
-		for (int i=0 ; i<7 ; i++) {
-			for (int j=0 ; j<9 ; j++) {
+		for (uint32_t i=0 ; i<7 ; i++) {
+			for (uint32_t j=0 ; j<9 ; j++) {
 				switch(grid[i][j]) {
 					case 1:
-						switch (teachDir) {
-							case 1:
-							default:
-								putImage(x,y,15,15,teachV, 0, 1);
-								break;
-							case 2:
-								putImage(x,y,15,15,teachH, 1, 0);
-								break;
-							case 3:
-								putImage(x,y,15,15,teachV, 0, 0);
-								break;
-							case 4:
-								putImage(x,y,15,15,teachH, 0, 0);
-								break;
-						}
+						putImage(i*15,j*15,15,15,student, 0, 0);
 						break;
-					case 2:
-						putImage(i,j,15,15,student, 0, 0);
-						break;
-					/*case 3:
+					/*case 2:
 						break;*/
 					case 0:
 					default:
-						fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+						fillRectangle(i*15,j*15,15,15,RGBToWord(0,0,0));
 						break;
 				}
 			}
+		}
+
+		// overlay teacher position
+		switch (teachDir) {
+			case 1:
+			default:
+				putImage(x,y,15,15,teachV, 0, 1);
+				break;
+			case 2:
+				putImage(x,y,15,15,teachH, 1, 0);
+				break;
+			case 3:
+				putImage(x,y,15,15,teachV, 0, 0);
+				break;
+			case 4:
+				putImage(x,y,15,15,teachH, 0, 0);
+				break;
 		}
 
 		printNumber(milliseconds, 60, 75, RGBToWord(225,225,225), RGBToWord(0,0,0));
