@@ -37,7 +37,7 @@ char PCmap[10][9] = {
 	"........",
 	"........",
 	"...#####",
-	"........",
+	".s......",
 	"........",
 	"...#####",
 	"........",
@@ -75,11 +75,18 @@ int main()
 	fillRectangle(x,y,15,15,RGBToWord(0,225,0));
 	delay(50);
 	while(1){
-		printNumber(milliseconds, 60, 75, RGBToWord(225,225,225), RGBToWord(0,0,0));
+		printNumber((int)PCmap[y][x], 60, 75, RGBToWord(225,225,225), RGBToWord(0,0,0));
 		if(uppressed() && (milliseconds%MVE_DELAY==0))
 		{
-			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-			
+			switch(PCmap[y][x]) {
+				case 's':
+					putImage((y)*16, (x)*16, 15, 15, studentV, 0, 0);
+					break;
+				default:
+					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+					break;
+			}
+
 			if ((y - 16) < 1)
 				y = 1;
 			else{y=y-16;}
@@ -93,7 +100,15 @@ int main()
 		}
 		if(downpressed() && (milliseconds%MVE_DELAY==0))
 		{
-			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			switch(PCmap[y][x]) {
+				case 's':
+					putImage((x)*16, (y)*16, 15, 15, studentV, 0, 0);
+					break;
+				default:
+					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+					break;
+			}
+
 			if ((y + 16) > 145)
 				y = 145;
 			else{y=y+16;}
@@ -105,7 +120,15 @@ int main()
 		}
 		if (leftpressed() && (milliseconds%MVE_DELAY==0))
 		{
-			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			switch(PCmap[y][x]) {
+				case 's':
+					putImage((y)*16, (x)*16, 15, 15, studentV, 0, 0);
+					break;
+				default:
+					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+					break;
+			}
+
 			if ((x - 16) < 1)
 				x = 1;
 			else{x=x-16;}
@@ -118,7 +141,15 @@ int main()
 		}
 		if (rightpressed() && (milliseconds%MVE_DELAY==0))
 		{
-			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			switch(PCmap[y][x]) {
+				case 's':
+					putImage((y)*16, (x)*16, 15, 15, studentV, 0, 0);
+					break;
+				default:
+					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+					break;
+			}
+
 			if ((x + 16) > 113)
 				x = 113;
 			else{x=x+16;}
@@ -168,20 +199,20 @@ void drawmap()
 	{
 		for(int Col = 0; Col < 8; Col++)
 		{
-			if (PCmap[Row][Col] == '#')
+			/*if (PCmap[Row][Col] == '#')
 			{
 				drawcomputer(Col*16, Row*16, RGBToWord(225,0,0));
 				putImage((Col)*16, (Row+1)*16, 15, 15, studentV, 0, 0);
-			}
+			}*/
 
-			/*switch(PCmap[Row][Col]) {
+			switch(PCmap[Row][Col]) {
 				case '#':
 					drawcomputer(Col*16, Row*16, RGBToWord(225,0,0));
 					break;
 				case 's':
 					putImage((Col)*16, (Row)*16, 15, 15, studentV, 0, 0);
 					break;
-			}*/
+			}
 
 		}
 	}
