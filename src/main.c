@@ -174,6 +174,15 @@ void drawmap()
 				putImage((Col)*16, (Row+1)*16, 15, 15, studentV, 0, 0);
 			}
 
+			/*switch(PCmap[Row][Col]) {
+				case '#':
+					drawcomputer(Col*16, Row*16, RGBToWord(225,0,0));
+					break;
+				case 's':
+					putImage((Col)*16, (Row)*16, 15, 15, studentV, 0, 0);
+					break;
+			}*/
+
 		}
 	}
 }
