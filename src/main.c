@@ -1,7 +1,7 @@
 #include <stm32f031x6.h>
 #include "display.h"
 
-#define MVE_DELAY 125
+#define MVE_DELAY 100
 
 void initClock(void);
 void initSysTick(void);
@@ -11,7 +11,8 @@ void setupIO();
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py);
 void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
-
+void eputchar(char c);
+char egetchar(void);
 volatile uint32_t milliseconds;
 
 const uint16_t student[]=
@@ -47,8 +48,8 @@ char PCmap[10][9] = {
 
 
 
-
-
+void printDecimal(int32_t Value);
+void initSerial();
 void drawmap();
 int rightpressed();
 int leftpressed();
@@ -64,6 +65,8 @@ int main()
 	initClock();
 	initSysTick();
 	setupIO();
+	initSerial();
+
 //	putImage(20,80,12,16,dg1,0,0);
 	
 //putImage(0,10,20,20,student,0,1);
@@ -84,6 +87,7 @@ int main()
 			if(PCmap[(y/16)][(x/16)] == '#')
 			{
 				y = y + 16;
+				eputchar('#');
 			}
 			putImage(x,y,15,15,teachV, 0, 1);
 		}
@@ -134,85 +138,9 @@ int main()
 			milliseconds = 0;
 		}
 
-/*		for(int y = 1; y < 150; y = y + 16)
-		{
-			for(int x = 1; x < 120; x = x + 16)
-			{
-				fillRectangle(x,y,15,15,RGBToWord(0,225,0));
-				delay(125);
-				fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-			}
-		}
-*/
+
 	}
-	/*
-	while(1)
-	{
 
-
-	
-		
-		if ((GPIOB->IDR & (1 << 4))==0) // right pressed
-		{					
-
-
-			hinverted=0;
-					
-		}
-		if ((GPIOB->IDR & (1 << 5))==0) // left pressed
-		{			
-			
-			hinverted=1;
-		
-		}
-		if ( (GPIOA->IDR & (1 << 11)) == 0) // down pressed
-		{
-
-			vinverted = 0;
-
-		}
-		if ( (GPIOA->IDR & (1 << 8)) == 0) // up pressed
-		{			
-
-
-			vinverted = 1;
-
-		}
-
-
-
-		putImage(0,10,20,20,student,hinverted,vinverted);
-
-		
-		if ((vmoved) || (hmoved))
-		{
-			// only redraw if there has been some movement (reduces flicker)
-			fillRectangle(oldx,oldy,12,16,0);
-			oldx = x;
-			oldy = y;					
-			if (hmoved)
-			{
-				if (toggle)
-					putImage(x,y,12,16,deco1,hinverted,0);
-				else
-					putImage(x,y,12,16,deco2,hinverted,0);
-				
-				toggle = toggle ^ 1;
-			}
-			else
-			{
-				putImage(x,y,12,16,deco3,0,vinverted);
-			}
-			// Now check for an overlap by checking to see if ANY of the 4 corners of deco are within the target area
-			if (isInside(20,80,12,16,x,y) || isInside(20,80,12,16,x+12,y) || isInside(20,80,12,16,x,y+16) || isInside(20,80,12,16,x+12,y+16) )
-			{
-				printTextX2("GLUG!", 10, 20, RGBToWord(0xff,0xff,0), 0);
-			}
-		}		
-		delay(50);
-	}
-	}
-	*/	
 	return 0;
 }
 void initSysTick(void)
@@ -360,4 +288,71 @@ void setupIO()
 	enablePullUp(GPIOB,5);
 	enablePullUp(GPIOA,11);
 	enablePullUp(GPIOA,8);
+}
+
+void initSerial()
+{
+	/* On the nucleo board, TX is on PA2 while RX is on PA15 */
+	RCC->AHBENR |= (1 << 17); // enable GPIOA
+	RCC->APB2ENR |= (1 << 14); // enable USART1
+	pinMode(GPIOA,2,2); // enable alternate function on PA2
+	pinMode(GPIOA,15,2); // enable alternate function on PA15
+	// AF1 = USART1 TX on PA2
+	GPIOA->AFR[0] &= 0xfffff0ff;
+	GPIOA->AFR[0] |= (1 << 8);
+	// AF1 = USART1 RX on PA15
+	GPIOA->AFR[1] &= 0x0fffffff;
+	GPIOA->AFR[1] |= (1 << 28);
+	// De-assert reset of USART1 
+	RCC->APB2RSTR &= ~(1u << 14);
+	
+	USART1->CR1 = 0; // disable before configuration
+	USART1->CR3 |= (1 << 12); // disable overrun detection
+	USART1->BRR = 48000000/9600; // assuming 48MHz clock and 9600 bps data rate
+	USART1->CR1 |= (1 << 2) + (1 << 3); // enable Transmistter and receiver
+	USART1->CR1 |= 1; // enable the UART
+
+}
+void eputchar(char c)
+{
+	while( (USART1->ISR & (1 << 6)) == 0); // wait for any ongoing transmission to finish
+	USART1->ICR=0xffffffff; // clear any error that may be on the port
+	USART1->TDR = c; // write the character to the Transmit Data Register
+}
+char egetchar()
+{
+	while( (USART1->ISR & (1 << 5)) == 0); // wait for a character
+	return (char)USART1->RDR; // return the character that is waiting in the Receive Data Register
+}
+void eputs(char *String)
+{
+	while(*String) // keep printing until a NULL is found
+	{
+		eputchar(*String);
+		String++;
+	}
+}
+void printDecimal(int32_t Value)
+{
+	char DecimalString[12]; // a 32 bit value range from -2 billion to +2 billion approx
+												// That's 10 digits
+												// plus a null character, plus a sign
+	DecimalString[11] = 0; // terminate the string;
+	if (Value < 0)
+	{
+		DecimalString[0]='-';
+		Value = -Value;
+	}
+	else
+	{
+		DecimalString[0]='+';
+	}
+	int index = 10;
+	while(index > 0)
+	{
+		DecimalString[index]=(Value % 10) + '0';
+		Value = Value / 10;
+		index--;
+	}
+	eputs(DecimalString);
 }
