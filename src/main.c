@@ -13,6 +13,7 @@ void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
 void eputchar(char c);
 char egetchar(void);
+void redLED(int);
 volatile uint32_t milliseconds;
 
 const uint16_t student[]=
@@ -56,6 +57,7 @@ int leftpressed();
 int downpressed();
 int uppressed();
 void drawcomputer(int x, int y, int Scolor);
+int altPressed();
 
 int main()
 {
@@ -212,7 +214,9 @@ void drawmap()
 	}
 }
 
-
+int altPressed(){
+	return (GPIOB->IDR & (1 << 0))==0;
+}
 int rightpressed()
 {
 	return (GPIOB->IDR & (1 << 4))==0;
@@ -228,6 +232,18 @@ int downpressed()
 int uppressed()
 {
 	return (GPIOA->IDR & (1 << 8)) == 0;
+}
+
+void redLED(int e)
+{
+	if (e == 1)
+	{
+		GPIOA->ODR |= (1 << 0);
+	}
+	else{
+		GPIOA->ODR &= ~(1 << 0);
+	}
+	
 }
 
 void drawcomputer(int x, int y, int Scolor)
