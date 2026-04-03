@@ -30,8 +30,7 @@ const uint16_t studentV[]={
 const uint16_t teachH[]= {0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,0,0,0,0,0,0,0,13294,13294,13294,13294,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,40224,8046,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,0,22355,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,0,22355,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,40224,8046,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,};
 
 const uint16_t blud[]= 
-{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,7936,7936,4,4,4,4,4,4,7936,7936,0,0,65535,65535,4,4,4,4,4,4,65535,65535,0,0,7936,7936,4,4,4,4,4,4,7936,7936,0,0,0,0,0,4,4,4,4,0,0,0,0,0,0,0,0,0,24327,24327,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-};
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6400,0,0,5888,0,0,0,0,0,0,0,0,0,0,6400,3840,3840,3840,0,0,0,0,0,0,0,0,0,0,0,3840,3840,3840,3840,0,0,0,0,0,0,0,5888,0,0,5888,3840,3840,3840,3840,3840,0,0,0,0,0,0,0,0,5888,3840,3840,3840,3840,3840,0,0,0,0,0,0,0,0,5888,3840,3840,3840,3840,3840,3840,0,0,0,0,0,5888,0,3840,3840,3840,3840,3840,3840,3840,3840,0,5888,0,0,0,0,6400,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,6400,0,3840,3840,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,0,3840,3840,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,0,6400,3840,3840,3840,3840,3840,3840,3840,3840,3840,0,5888,0,5888,0,0,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,0,0,0,6400,0,3840,3840,6400,0,5888,0,0,0,0,0,0,0,0,0,0,3840,0,0,0,0,0,0,0,0,};
 const uint16_t Lstudent[]=
 {
 	0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,
@@ -42,14 +41,14 @@ const uint16_t teachV[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8046,8046,8046,
 // The map of the game. # is a computer, s is a student, ! is a cheater, and . is an empty space
 char PCmap[10][9] = {
 	"........",
-	"...#####",
-	"...sssss",
+	"###..###",
+	"sss..sss",
+	"##......",
+	"ss####..",
+	"..ssss..",
 	"........",
-	"...#####",
-	"...sssss",
-	"........",
-	"...#####",
-	"...sssss",
+	".....###",
+	".....sss",
 	"........"
 	
 };
@@ -72,7 +71,8 @@ void redLED(int);//LED control function, 1 for on, 0 for off
 //Aux Functions
 void drawcomputer(int x, int y, int Scolor);//Draws a computer at the given x and y coordinates. Color specifies color of the screen
 int checkpos(int x, int y);//Function to check the current player pos. Returns 0 for empty, 1 for cheater(LED turns on), 2 for student and restore the image.
-
+int GameMenu();
+int PlayGame();
 //lwk need a new name for this one
 //-----------------
 int checkpos2(int x, int y);//Function to check the current player pos. Returns 0 for empty, 1 for cheater, 2 for student. This one doesnt restore
@@ -85,31 +85,98 @@ int AttemptCheater(int);//Function attempts to select a cheater with a 10% chanc
 int main()
 {
 	//Starting position of the player
-	uint16_t x = 1;
-	uint16_t y = 1;
-	int score = 0;
-	int CheaterCount = 0;
-	int StudentCount = drawmap();
-	int buffer = 0;
+
 //	int SelectedComputer = rand() % ComputerCount;
 
 	initClock();
 	initSysTick();
 	setupIO();
 	initSerial();
+	fillRectangle(0,0,127,165,RGBToWord(0,0,0));
+	int number = 0;
+	int buffer = 0;
+//Game menu section
+	while (1)
+	{
+		switch (GameMenu())
+		{
+		case 0:
+			buffer = PlayGame();
+			if(buffer > number)
+			{
+				number = buffer;
+			}
+			break;
+		case 1:
+			fillRectangle(0,0,127,165,RGBToWord(0,0,0));
+			printText("Current Highscore", 1, 20, RGBToWord(225,225,225), RGBToWord(0,0,0));
+			printNumber(number, 1, 40, RGBToWord(225,225,225), RGBToWord(0,0,0));
+
+			while(!rightpressed() && !leftpressed())
+			{}
+			break;
+	
+		default:
+			fillRectangle(0,0,128,165,RGBToWord(0,0,0));
+			return 0;
+			break;
+		}
+		fillRectangle(0,0,128,165,RGBToWord(0,0,0));
+	}
+
 
 //Game init	
+
+
+	//printNumber((int)PCmap[y/16][x/16], 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
+
+
+	
+
+
+//Game loop
+
+
+	return 0;
+}
+
+
+//Game
+
+int PlayGame()
+{
+
+	uint16_t x = 65;
+	uint16_t y = 17;
+	int score = 0;
+	int CheaterCount = 0;
+	int StudentCount = drawmap();
+	int buffer = 0;
+	milliseconds = 0;
+
 	drawmap();
 	putImage(x,y,15,15,teachH, 1, 0);
 	delay(50);
-	redLED(1);
+	redLED(0);
 
-	printNumber((int)PCmap[y/16][x/16], 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
 
-//Game loop
-	while(1){
 
-		if(CheaterCount < 3 && (milliseconds%(MVE_DELAY*5)==0))
+	while(milliseconds < 60000){
+
+		if(StudentCount == 0 && CheaterCount == 0)
+		{
+			score = score * (60000-milliseconds);
+			fillRectangle(0,0,128,165,RGBToWord(0,0,0));
+			printText("Final Score:", 33, 40, RGBToWord(225,0,0), RGBToWord(0,0,0));
+			printNumber(score, 33, 60, RGBToWord(225,0,0), RGBToWord(0,0,0));
+			delay(500);
+			while (!altPressed())
+			{}	
+			delay(500);
+			return score;
+			break;
+		}
+		if((CheaterCount < 3 && StudentCount != 0 ) && (milliseconds%(MVE_DELAY*5)==0))
 		{
 			displayScore(StudentCount);
 			buffer = AttemptCheater(StudentCount);
@@ -199,21 +266,35 @@ int main()
 			checkpos(x,y);
 			putImage(x,y,15,15,teachH, 1, 0);
 		}
-		if(rightpressed() && leftpressed())
+		if(rightpressed() && leftpressed() && altPressed())
 		{
-			x = y = 1;
-			CheaterCount = 0;
-			StudentCount = drawmap();
-			putImage(x,y,15,15,teachH, 1, 0);
 			delay(500);
-			milliseconds = 0;
+			return score;
+
 		}
 
 
 	}
-
-	return 0;
+	fillRectangle(0,0,128,165,RGBToWord(0,0,0));
+	printText("Time's up!", 33, 20, RGBToWord(225,0,0), RGBToWord(0,0,0));
+	printText("Final Score:", 33, 40, RGBToWord(225,0,0), RGBToWord(0,0,0));
+	printNumber(score, 33, 60, RGBToWord(225,0,0), RGBToWord(0,0,0));
+	while (!altPressed())
+	{}
+	
+	return score;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 //Game relatred functions
 
@@ -253,7 +334,7 @@ int drawmap()
 int AttemptCheater(int x)// 10% chance to select a cheater out of availibe students. Returns 1 if successful, 0 if not.
 {
 	int temp = 0;
-	if(rand() % 10 == 1)
+	if(rand() % 3 == 1)
 	{
 		x = rand() % x;
 
@@ -341,7 +422,7 @@ int checkpos(int x, int y)
 					return 1;
 					break;
 				case '-':
-					fillRectangle(x,y,15,15,RGBToWord(0,0,225));
+					putImage(x,y, 15,15, blud, 0, 0);
 					eputchar('-');
 					break;
 				default:
@@ -376,8 +457,57 @@ void displayScore(int score)
 	printNumber(score, 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
 }
 
+int GameMenu()
+{
+	int CntSelection = 0;
+	printText("CA Trials", 33, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
+	
+	while (1)
+	{
+	
+	
+		if (downpressed() && (milliseconds%MVE_DELAY==0))
+		{
+			CntSelection = (CntSelection + 1) % 3;
+			delay(200);
+		}
+		if (uppressed() && (milliseconds%MVE_DELAY==0))
+		{
+			CntSelection = (CntSelection - 1) % 3;
+			delay(200);
+		}
+		
+		if((milliseconds%(MVE_DELAY)*2.5==0))
+		{
+			switch(CntSelection)
+			{
+				case 0:
+					printText("Start", 33, 20, RGBToWord(225,0,0), RGBToWord(0,0,0));
+					printText("Highscore", 33, 40, RGBToWord(128,128,128), RGBToWord(0,0,0));
+					printText("Exit", 33, 60, RGBToWord(128,128,128), RGBToWord(0,0,0));
+					if(altPressed())
+					{return 0;}
+					break;
+				case 1:
+					printText("Start", 33, 20, RGBToWord(128,128,128), RGBToWord(0,0,0));
+					printText("Highscore", 33, 40, RGBToWord(225,0,0), RGBToWord(0,0,0));
+					printText("Exit", 33, 60, RGBToWord(128,128,128), RGBToWord(0,0,0));
+					if(altPressed())
+					{return 1;}
+					break;
+				case 2:
+					printText("Start", 33, 20, RGBToWord(128,128,128), RGBToWord(0,0,0));
+					printText("Highscore", 33, 40, RGBToWord(128,128,128), RGBToWord(0,0,0));
+					printText("Exit", 33, 60, RGBToWord(225,0,0), RGBToWord(0,0,0));
+					if(altPressed())
+					{return 2;}
+					break;
+			}
 
+		}
 
+	}
+}
 
 
 // System Functions
