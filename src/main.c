@@ -1,6 +1,10 @@
 #include <stm32f031x6.h>
+#include <stdlib.h>
 #include "display.h"
+#include "sound.h"
+#include "musical_notes.h"
 
+//game speed
 #define MVE_DELAY 100
 
 void initClock(void);
@@ -13,6 +17,8 @@ void enablePullUp(GPIO_TypeDef *Port, uint32_t BitNumber);
 void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode);
 void eputchar(char c);
 char egetchar(void);
+
+
 volatile uint32_t milliseconds;
 
 const uint16_t student[]=
@@ -32,139 +38,173 @@ const uint16_t Lstudent[]=
 };
 const uint16_t teachV[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,13294,13294,13294,13294,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,13294,13294,13294,13294,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,13294,13294,13294,13294,8046,22355,22355,8046,22355,22355,8046,13294,13294,13294,13294,13294,13294,13294,13294,8046,8046,22355,8046,22355,8046,8046,13294,13294,13294,13294,8046,8046,8046,0,8046,40224,0,8046,0,40224,8046,0,8046,8046,8046,8046,8046,8046,0,8046,8046,8046,8046,8046,8046,8046,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
 
+
+// The map of the game. # is a computer, s is a student, ! is a cheater, and . is an empty space
 char PCmap[10][9] = {
-	"...#####",
-	"........",
 	"........",
 	"...#####",
-	".s......",
+	"...sssss",
 	"........",
 	"...#####",
+	"...sssss",
 	"........",
-	"........",
+	"...#####",
+	"...sssss",
 	"........"
+	
 };
 
-
+//load bearing coconut
 
 
 void printDecimal(int32_t Value);
 void initSerial();
-void drawmap();
+
+
+//Controls functions
 int rightpressed();
 int leftpressed();
 int downpressed();
 int uppressed();
-void drawcomputer(int x, int y, int Scolor);
+int altPressed();//ALT Button
+void redLED(int);//LED control function, 1 for on, 0 for off
+
+//Aux Functions
+void drawcomputer(int x, int y, int Scolor);//Draws a computer at the given x and y coordinates. Color specifies color of the screen
+int checkpos(int x, int y);//Function to check the current player pos. Returns 0 for empty, 1 for cheater(LED turns on), 2 for student and restore the image.
+
+//lwk need a new name for this one
+//-----------------
+int checkpos2(int x, int y);//Function to check the current player pos. Returns 0 for empty, 1 for cheater, 2 for student. This one doesnt restore
+//-----------------
+
+int drawmap();// Function to draw the map
+void displayScore(int);// Function to display the score on the screen
+int AttemptCheater(int);//Function attempts to select a cheater with a 10% chance. Returns 1 if successful, 0 if not.
 
 int main()
 {
+	//Starting position of the player
 	uint16_t x = 1;
 	uint16_t y = 1;
+	int score = 0;
+	int CheaterCount = 0;
+	int StudentCount = drawmap();
+	int buffer = 0;
+//	int SelectedComputer = rand() % ComputerCount;
 
 	initClock();
 	initSysTick();
 	setupIO();
 	initSerial();
 
-//	putImage(20,80,12,16,dg1,0,0);
-	
-//putImage(0,10,20,20,student,0,1);
+//Game init	
 	drawmap();
-
-	fillRectangle(x,y,15,15,RGBToWord(0,225,0));
+	putImage(x,y,15,15,teachH, 1, 0);
 	delay(50);
+	redLED(1);
+
+	printNumber((int)PCmap[y/16][x/16], 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
+
+//Game loop
 	while(1){
-		printNumber((int)PCmap[y][x], 60, 75, RGBToWord(225,225,225), RGBToWord(0,0,0));
+
+		if(CheaterCount < 3 && (milliseconds%(MVE_DELAY*5)==0))
+		{
+			displayScore(StudentCount);
+			buffer = AttemptCheater(StudentCount);
+			StudentCount = StudentCount - buffer;
+			CheaterCount = CheaterCount + buffer;
+		}
+
+		if(altPressed() && checkpos2(x,y) == 1)
+		{
+			CheaterCount -= 1;
+			score += 1;
+			PCmap[y/16][x/16] = '-';
+			eputchar('-');
+			redLED(0);
+		}
+
+	//Movement section.
 		if(uppressed() && (milliseconds%MVE_DELAY==0))
 		{
-			switch(PCmap[y][x]) {
-				case 's':
-					putImage((y)*16, (x)*16, 15, 15, studentV, 0, 0);
-					break;
-				default:
-					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-					break;
-			}
 
-			if ((y - 16) < 1)
-				y = 1;
-			else{y=y-16;}
+			if ((y - 16) < 17)
+				{y = 17;
+				eputchar('1');}
+			else{
+				checkpos(x,y);
+				y=y-16;}
 
-			if(PCmap[(y/16)][(x/16)] == '#')
-			{
-				y = y + 16;
-				eputchar('#');
-			}
+			if(PCmap[(y/16)][(x/16)]  == '#')
+				{y = y + 16;
+				eputchar('2');}
+
+			checkpos(x,y);
 			putImage(x,y,15,15,teachV, 0, 1);
 		}
 		if(downpressed() && (milliseconds%MVE_DELAY==0))
 		{
-			switch(PCmap[y][x]) {
-				case 's':
-					putImage((x)*16, (y)*16, 15, 15, studentV, 0, 0);
-					break;
-				default:
-					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-					break;
-			}
 
 			if ((y + 16) > 145)
-				y = 145;
-			else{y=y+16;}
-			if(PCmap[((y/16))][(x/16)] == '#')
-			{
-				y = y - 16;
-			}
+				{y = 145;
+				eputchar('1');
+				}
+			else{
+				checkpos(x,y);
+				y=y+16;
+				}
+
+			if(PCmap[(y/16)][(x/16)]  == '#')
+				{y = y - 16;
+				eputchar('2');}
+
+			checkpos(x,y);
 			putImage(x,y,15,15,teachV, 0, 0);
 		}
 		if (leftpressed() && (milliseconds%MVE_DELAY==0))
 		{
-			switch(PCmap[y][x]) {
-				case 's':
-					putImage((y)*16, (x)*16, 15, 15, studentV, 0, 0);
-					break;
-				default:
-					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-					break;
-			}
 
 			if ((x - 16) < 1)
-				x = 1;
-			else{x=x-16;}
+				{x = 1;
+				eputchar('1');}
+			else{
+				checkpos(x,y);
+				x=x-16;}
 
-			if(PCmap[(y/16)][(x/16)] == '#')
-			{
-				x = x + 16;
-			}
+			if(PCmap[(y/16)][(x/16)]  == '#')
+				{x = x + 16;
+				eputchar('2');}
+
+			checkpos(x,y);	
 			putImage(x,y,15,15,teachH, 0, 0);
 		}
 		if (rightpressed() && (milliseconds%MVE_DELAY==0))
 		{
-			switch(PCmap[y][x]) {
-				case 's':
-					putImage((y)*16, (x)*16, 15, 15, studentV, 0, 0);
-					break;
-				default:
-					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-					break;
-			}
-
 			if ((x + 16) > 113)
-				x = 113;
-			else{x=x+16;}
+				{x = 113;
+				eputchar('1');
+				}
+			else{
+				checkpos(x,y);
+				x=x+16;
+				}
 
-			if(PCmap[(y/16)][(x/16)] == '#')
-			{
-				x = x - 16;
-			}
+			if(PCmap[(y/16)][(x/16)]  == '#')
+				{x = x - 16;
+				eputchar('2');
+				}
+
+			checkpos(x,y);
 			putImage(x,y,15,15,teachH, 1, 0);
 		}
 		if(rightpressed() && leftpressed())
 		{
 			x = y = 1;
-			drawmap();
-			fillRectangle(x,y,15,15,RGBToWord(0,225,0));
+			CheaterCount = 0;
+			StudentCount = drawmap();
+			putImage(x,y,15,15,teachH, 1, 0);
 			delay(500);
 			milliseconds = 0;
 		}
@@ -174,51 +214,81 @@ int main()
 
 	return 0;
 }
-void initSysTick(void)
-{
-	SysTick->LOAD = 48000;
-	SysTick->CTRL = 7;
-	SysTick->VAL = 10;
-	__asm(" cpsie i "); // enable interrupts
-}
 
-void drawmap()
+//Game relatred functions
+
+int drawmap()
 {
+	int temp = 0;
 	fillRectangle(0,0,127,165,RGBToWord(0,0,0));
-/*	for(int i=0; i < 168; i = i + 16 )
-	{
-		
-		drawLine(0,i,127, i, RGBToWord(225,225,225));
-	}
-	for(int b=0; b < 127; b = b + 16 )
-	{
-		drawLine(b,0,b, 167, RGBToWord(225,225,225));
-	}
-	drawRectangle(0,0,127,159,RGBToWord(225,0,0));*/
 	for(int Row = 0; Row < 10; Row++)
 	{
 		for(int Col = 0; Col < 8; Col++)
 		{
-			/*if (PCmap[Row][Col] == '#')
-			{
-				drawcomputer(Col*16, Row*16, RGBToWord(225,0,0));
-				putImage((Col)*16, (Row+1)*16, 15, 15, studentV, 0, 0);
-			}*/
-
 			switch(PCmap[Row][Col]) {
 				case '#':
-					drawcomputer(Col*16, Row*16, RGBToWord(225,0,0));
+					drawcomputer((Col*16)+1, (Row*16)+1, RGBToWord(225,0,0));
 					break;
 				case 's':
-					putImage((Col)*16, (Row)*16, 15, 15, studentV, 0, 0);
+					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
+					temp++;
+					break;
+				case '!':
+					PCmap[Row][Col] = 's';
+					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
+					temp++;
+					break;
+				case '-':
+					PCmap[Row][Col] = 's';
+					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
+					temp++;
 					break;
 			}
 
 		}
 	}
+	return temp;
+}
+
+int AttemptCheater(int x)// 10% chance to select a cheater out of availibe students. Returns 1 if successful, 0 if not.
+{
+	int temp = 0;
+	if(rand() % 10 == 1)
+	{
+		x = rand() % x;
+
+
+		for (int Row = 0; Row < 10; Row++)
+			{
+				for(int Col = 0; Col < 8; Col++)
+					{
+						if(temp == x && PCmap[Row][Col] == 's')
+						{
+							drawcomputer((Col)*16+1, (Row-1)*16+1, RGBToWord(225, 225, 0));
+							PCmap[Row][Col] = '!';
+							return 1;
+						}
+						else if (PCmap[Row][Col] == 's')
+						{
+							temp++;
+						}
+						
+					}
+			}
+			
+
+
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 
+int altPressed(){
+	return (GPIOB->IDR & (1 << 0))==0;
+}
 int rightpressed()
 {
 	return (GPIOB->IDR & (1 << 4))==0;
@@ -236,6 +306,18 @@ int uppressed()
 	return (GPIOA->IDR & (1 << 8)) == 0;
 }
 
+void redLED(int e)
+{
+	if (e == 1)
+	{
+		GPIOA->ODR |= (1 << 0);
+	}
+	else{
+		GPIOA->ODR &= ~(1 << 0);
+	}
+	
+}
+
 void drawcomputer(int x, int y, int Scolor)
 {
 	drawRectangle(x+2,y+1,11,7,RGBToWord(128,128,128));
@@ -244,8 +326,61 @@ void drawcomputer(int x, int y, int Scolor)
 
 	fillRectangle(x+3,y+12,10,2,RGBToWord(128,128,128));
 }
+int checkpos(int x, int y)
+{
+				switch(PCmap[y/16][x/16]) {
+				case 's':
+					putImage(x, y, 15, 15, studentV, 0, 0);
+					redLED(0);
+					eputchar('s');
+					return 2;
+					break;
+				case '!':
+					redLED(1);
+					eputchar('!');
+					return 1;
+					break;
+				case '-':
+					fillRectangle(x,y,15,15,RGBToWord(0,0,225));
+					eputchar('-');
+					break;
+				default:
+					redLED(0);
+					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+					eputchar('.');
+					return 0;
+					break;
+			}
+}
+int checkpos2(int x, int y)
+{
+				switch(PCmap[y/16][x/16]) {
+				case 's':
+					return 2;
+					break;
+				case '!':
+					return 1;
+					break;
+				case '-':
+					return 3;
+					break;
+				default:
+					return 0;
+					break;
+			}
+}
+
+void displayScore(int score)
+{
+	printText("Score:", 1, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
+	printNumber(score, 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
+}
 
 
+
+
+
+// System Functions
 void SysTick_Handler(void)
 {
 	milliseconds++;
@@ -278,6 +413,10 @@ void initClock(void)
         // set PLL as system clock source 
         RCC->CFGR |= (1<<1);
 }
+
+
+
+
 void delay(volatile uint32_t dly)
 {
 	uint32_t end_time = dly + milliseconds;
@@ -300,6 +439,15 @@ void pinMode(GPIO_TypeDef *Port, uint32_t BitNumber, uint32_t Mode)
 	mode_value = mode_value | Mode;
 	Port->MODER = mode_value;
 }
+
+void initSysTick(void)
+{
+	SysTick->LOAD = 48000;
+	SysTick->CTRL = 7;
+	SysTick->VAL = 10;
+	__asm(" cpsie i "); // enable interrupts
+}
+
 int isInside(uint16_t x1, uint16_t y1, uint16_t w, uint16_t h, uint16_t px, uint16_t py)
 {
 	// checks to see if point px,py is within the rectange defined by x,y,w,h
@@ -320,10 +468,13 @@ void setupIO()
 {
 	RCC->AHBENR |= (1 << 18) + (1 << 17); // enable Ports A and B
 	display_begin();
+	pinMode(GPIOB,0,0);
 	pinMode(GPIOB,4,0);
 	pinMode(GPIOB,5,0);
+	pinMode(GPIOA,0,1);
 	pinMode(GPIOA,8,0);
 	pinMode(GPIOA,11,0);
+	enablePullUp(GPIOB,0);
 	enablePullUp(GPIOB,4);
 	enablePullUp(GPIOB,5);
 	enablePullUp(GPIOA,11);
@@ -396,3 +547,4 @@ void printDecimal(int32_t Value)
 	}
 	eputs(DecimalString);
 }
+
