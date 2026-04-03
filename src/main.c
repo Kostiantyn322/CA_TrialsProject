@@ -55,7 +55,7 @@ int rightpressed();
 int leftpressed();
 int downpressed();
 int uppressed();
-int altPressed();// ALT Button
+int altpressed();// ALT Button
 void redLED(int);// LED control function, 1 for on, 0 for off
 
 //Aux Functions
@@ -64,7 +64,7 @@ int checkLED(int x, int y);// Checks what the player is currently standing on, r
 int checkpos(int x, int y);// Function to check the current player pos. Returns 0 for empty, 1 for cheater, 2 for student, 3 for dead student. This one doesnt restore
 
 int drawmap();// Function to draw the map
-void displayScore(int);// Function to display the score on the screen
+void displayscore(int);// Function to display the score on the screen
 int AttemptCheater(int);// Function attempts to select a cheater with a 10% chance. Returns 1 if successful, 0 if not.
 
 int main() {
@@ -95,7 +95,7 @@ int main() {
 		// add more cheaters if there's less than the limit
 		if(CheaterCount < CHEAT_LIMIT && (milliseconds%(MVE_DELAY*5)==0))
 		{
-			displayScore(StudentCount); // print the score at the top
+			displayscore(StudentCount); // print the score at the top
 			// attempt to add a cheater, and update respective counts
 			buffer = AttemptCheater(StudentCount);
 			StudentCount -= buffer;
@@ -103,7 +103,7 @@ int main() {
 		}
 
 		// kill cheater if alt button is killed
-		if (altPressed() && checkpos(x,y) == 1) {
+		if (altpressed() && checkpos(x,y) == 1) {
 			CheaterCount--;
 			score++;
 			PCmap[y/16][x/16] = '-';
@@ -238,13 +238,13 @@ int main() {
 	} // while
 
 	return 0;
-}
+} // main
 
-// Game relatred functions
+// game relatred functions
 
-int drawmap()
-{
-	int temp = 0;
+// draws the game layout on screen based on the global array, also resets dead or cheating students
+int drawmap() {
+	int student_count = 0;
 	fillRectangle(0,0,127,165,RGBToWord(0,0,0));
 	for(int Row = 0; Row < 10; Row++)
 	{
@@ -256,26 +256,25 @@ int drawmap()
 					break;
 				case 's':
 					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
-					temp++;
+					student_count++;
 					break;
 				case '!':
 					PCmap[Row][Col] = 's';
 					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
-					temp++;
+					student_count++;
 					break;
 				case '-':
 					PCmap[Row][Col] = 's';
 					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
-					temp++;
+					student_count++;
 					break;
-			}
+			} // switch
+		} // for
+	} // for
+	return student_count; // return amount of students in map layout
+} // draw map
 
-		}
-	}
-	return temp;
-}
-
-int AttemptCheater(int x)// 10% chance to select a cheater out of availibe students. Returns 1 if successful, 0 if not.
+int AttemptCheater(int x) // 10% chance to select a cheater out of availibe students. Returns 1 if successful, 0 if not.
 {
 	int temp = 0;
 	if(rand() % 10 == 1)
@@ -310,93 +309,100 @@ int AttemptCheater(int x)// 10% chance to select a cheater out of availibe stude
 	}
 }
 
-
-int altPressed(){
+// alt button check
+int altpressed() {
 	return (GPIOB->IDR & (1 << 0))==0;
-}
-int rightpressed()
-{
+} // altpressed
+
+// right button check
+int rightpressed() {
 	return (GPIOB->IDR & (1 << 4))==0;
-}
-int leftpressed()
-{
+} // rightpressed
+
+// left button check
+int leftpressed() {
 	return (GPIOB->IDR & (1 << 5))==0;
-}
-int downpressed()
-{
+} // leftpressed
+
+// down button check
+int downpressed() {
 	return (GPIOA->IDR & (1 << 11)) == 0;
-}
-int uppressed()
-{
+} // downpressed
+
+// up button check
+int uppressed() {
 	return (GPIOA->IDR & (1 << 8)) == 0;
-}
+} // uppressed
 
-void redLED(int e)
-{
-	if (e == 1)
-	{
+// turns the LED on or off
+void redLED(int on) {
+	if (on == 1) {
 		GPIOA->ODR |= (1 << 0);
-	}
-	else{
+	} else {
 		GPIOA->ODR &= ~(1 << 0);
-	}
-	
-}
+	} // if/else
+} // redLED
 
-void drawcomputer(int x, int y, int Scolor)
-{
+// function to draw a computer, with arguments for colour rather than coding in sprites
+void drawcomputer(int x, int y, int Scolor) {
 	drawRectangle(x+2,y+1,11,7,RGBToWord(128,128,128));
 	fillRectangle(x+3,y+2,10,6, Scolor);
 	fillRectangle(x+6,y+9,5, 2,RGBToWord(128,128,128));
-
 	fillRectangle(x+3,y+12,10,2,RGBToWord(128,128,128));
-}
-int checkLED(int x, int y)
-{
-				switch(PCmap[y/16][x/16]) {
-				case 's':
-					putImage(x, y, 15, 15, studentV, 0, 0);
-					eputchar('s');
-					return 2;
-					break;
-				case '!':
-					eputchar('!');
-					return 1;
-					break;
-				case '-':
-					fillRectangle(x,y,15,15,RGBToWord(0,0,225));
-					eputchar('-');
-					break;
-				default:
-					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-					eputchar('.');
-					return 0;
-					break;
-			}
-}
-int checkpos(int x, int y)
-{
-				switch(PCmap[y/16][x/16]) {
-				case 's':
-					return 2;
-					break;
-				case '!':
-					return 1;
-					break;
-				case '-':
-					return 3;
-					break;
-				default:
-					return 0;
-					break;
-			}
-}
+} // drawcomputer
 
-void displayScore(int score)
-{
+// checks whether the LED should be turned on
+// return values based on map characters
+int checkLED(int x, int y) {
+	switch(PCmap[y/16][x/16]) {
+		case 's':
+			putImage(x, y, 15, 15, studentV, 0, 0);
+			eputchar('s');
+			return 2;
+			break;
+		case '!':
+			eputchar('!');
+			return 1;
+			break;
+		case '-':
+			fillRectangle(x,y,15,15,RGBToWord(0,0,225));
+			eputchar('-');
+			break;
+		default:
+			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			eputchar('.');
+			return 0;
+			break;
+	} // switch
+} // checkLED
+
+// check what what entity the player is standing over, without drawing over anything
+int checkpos(int x, int y) {
+	switch(PCmap[y/16][x/16]) {
+		case 's':
+			return 2;
+			break;
+		case '!':
+			return 1;
+			break;
+		case '-':
+			return 3;
+			break;
+		default:
+			return 0;
+			break;
+	} // switch
+} // checkpos
+
+// prints the current score at the top of the screen
+void displayscore(int score) {
 	printText("Score:", 1, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
 	printNumber(score, 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
-}
+} // displayscore
+
+
+
+
 
 
 
