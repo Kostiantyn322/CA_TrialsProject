@@ -4,12 +4,17 @@
 #include "sound.h"
 #include "musical_notes.h"
 
-//game speed
-#define MVE_DELAY 100
-#define BPM 300
+#define MVE_DELAY 100 // game tick interval in milliseconds
+#define BEAT_MS 300	  // duration of music beats in milliseconds
+#define CHEAT_LIMIT 3 // maximum amount of cheaters
+#define TIME_LIMIT 30 // time limit in seconds
 
+
+
+// system functions
 void initClock(void);
 void initSysTick(void);
+void initSerial();
 void SysTick_Handler(void);
 void delay(volatile uint32_t dly);
 void setupIO();
@@ -20,26 +25,49 @@ char egetchar(void);
 void initSound();
 void eputs(char *str);
 volatile uint32_t milliseconds;
+void printDecimal(int32_t Value);
 
-const uint16_t student[]=
-{0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,0,0,45056,45056,45056,45056,56685,56685,56685,0,0,0,0,0,0,0,0,0,45056,45056,45056,56685,65535,56685,0,0,0,0,0,0,0,0,45056,45056,45056,45056,56685,0,56685,0,0,0,0,0,0,0,0,0,45056,45056,45056,56685,56685,56685,0,0,0,0,0,0,0,0,45056,45056,45056,45056,56685,0,56685,0,0,0,0,0,0,0,0,0,45056,45056,45056,56685,65535,56685,0,0,0,0,0,0,0,0,45056,45056,45056,45056,56685,56685,56685,0,0,0,0,0,0,0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,16621,16621,16621,40375,40375,40375,40375,40375,40375,0,
-};
-const uint16_t studentV[]={
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,56685,56685,56685,56685,56685,56685,56685,40375,40375,40375,40375,16621,16621,16621,16621,56685,65535,0,56685,0,65535,56685,16621,16621,16621,16621,16621,16621,16621,16621,56685,56685,56685,56685,56685,56685,56685,16621,16621,16621,16621,16621,16621,16621,16621,45056,45056,45056,45056,45056,45056,45056,16621,16621,16621,16621,0,0,0,0,45056,45056,45056,45056,45056,45056,45056,0,0,0,0,0,0,0,0,45056,45056,45056,45056,45056,45056,45056,0,0,0,0,0,0,0,0,45056,0,45056,0,45056,0,45056,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-};
+// input/output functions
+int rightpressed();
+int leftpressed();
+int downpressed();
+int uppressed();
+int altpressed(); // ALT Button
+void redLED(int); // LED control function, 1 for on, 0 for off
+
+// game functions
+int PlayGame(int);
+int drawmap(); // Draws the map and resets any dead or cheating students
+void displayScore(int); // Displays the current score
+int AttemptCheater(int); // Attempts to randomly make a student a cheater
+void drawcomputer(int x, int y, int Scolor); // Draws a computer at the given x and y coordinates. Scolor specifies color of the screen
+int checkLED(int x, int y); // Function to check the current player pos. Returns 0 for empty, 1 for cheater(LED turns on), 2 for student and restore the image.
+int checkpos(int x, int y); // Function to check the current player pos. Returns 0 for empty, 1 for cheater, 2 for student. This one doesnt restore
+
+// menu functions
+int GameMenu();
+void Getname();
+void resetNameField();
+
+
+
+
+
+// game sprites
 const uint16_t teachH[]= {0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,0,0,0,0,0,0,0,13294,13294,13294,13294,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,40224,8046,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,0,22355,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,0,22355,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,40224,8046,22355,8046,8046,8046,8046,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,0,0,0,};
-
-const uint16_t blud[]= 
-{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6400,0,0,5888,0,0,0,0,0,0,0,0,0,0,6400,3840,3840,3840,0,0,0,0,0,0,0,0,0,0,0,3840,3840,3840,3840,0,0,0,0,0,0,0,5888,0,0,5888,3840,3840,3840,3840,3840,0,0,0,0,0,0,0,0,5888,3840,3840,3840,3840,3840,0,0,0,0,0,0,0,0,5888,3840,3840,3840,3840,3840,3840,0,0,0,0,0,5888,0,3840,3840,3840,3840,3840,3840,3840,3840,0,5888,0,0,0,0,6400,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,6400,0,3840,3840,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,0,3840,3840,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,0,6400,3840,3840,3840,3840,3840,3840,3840,3840,3840,0,5888,0,5888,0,0,3840,3840,3840,3840,3840,3840,3840,3840,0,0,0,0,0,0,0,6400,0,3840,3840,6400,0,5888,0,0,0,0,0,0,0,0,0,0,3840,0,0,0,0,0,0,0,0,};
-const uint16_t Lstudent[]=
-{
-	0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,16142,16142,16142,0,0,0,0,16142,16142,16142,16142,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,16142,16142,16142,0,0,0,0,16142,16142,16142,1994,16142,1994,16142,16142,0,0,0,0,16142,16142,16142,1994,1994,1994,16142,16142,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,0,0,0,16142,16142,16142,16142,16142,16142,0,0,0,
-};
 const uint16_t teachV[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,8046,0,0,0,0,13294,13294,13294,13294,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,13294,13294,13294,13294,8046,8046,8046,8046,8046,8046,8046,13294,13294,13294,13294,13294,13294,13294,13294,8046,22355,22355,8046,22355,22355,8046,13294,13294,13294,13294,13294,13294,13294,13294,8046,8046,22355,8046,22355,8046,8046,13294,13294,13294,13294,8046,8046,8046,0,8046,40224,0,8046,0,40224,8046,0,8046,8046,8046,8046,8046,8046,0,8046,8046,8046,8046,8046,8046,8046,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,8046,8046,8046,0,0,0,0,0,0,0,0,0,8046,8046,8046,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
+const uint16_t studentV[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,0,0,0,0,0,0,0,40375,40375,40375,40375,40375,40375,40375,40375,56685,56685,56685,56685,56685,56685,56685,40375,40375,40375,40375,16621,16621,16621,16621,56685,65535,0,56685,0,65535,56685,16621,16621,16621,16621,16621,16621,16621,16621,56685,56685,56685,56685,56685,56685,56685,16621,16621,16621,16621,16621,16621,16621,16621,45056,45056,45056,45056,45056,45056,45056,16621,16621,16621,16621,0,0,0,0,45056,45056,45056,45056,45056,45056,45056,0,0,0,0,0,0,0,0,45056,45056,45056,45056,45056,45056,45056,0,0,0,0,0,0,0,0,45056,0,45056,0,45056,0,45056,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
+const uint16_t blud[]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0,0,0,4,4,4,4,4,4,0,0,0,0,7936,7936,4,4,4,4,4,4,7936,7936,0,0,65535,65535,4,4,4,4,4,4,65535,65535,0,0,7936,7936,4,4,4,4,4,4,7936,7936,0,0,0,0,0,4,4,4,4,0,0,0,0,0,0,0,0,0,24327,24327,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,};
+
+// game's soundtrack
 const int notes[] = {E4, A4, A4, C4, C4, A4, E4, E4, B4, A4, G4, F4, E4, E4,};
 
+// name of high score holder
+char name[10] = {"________"};
 
-// The map of the game. # is a computer, s is a student, ! is a cheater, and . is an empty space
+// the map of the game. # is a computer, s is a student, ! is a cheater, - is a dead student, and . is an empty space
+// at game start, there are no cheaters or dead students
+// top row is out of bounds, reserved for score
 char PCmap[10][9] = {
 	"........",
 	"###..###",
@@ -51,535 +79,543 @@ char PCmap[10][9] = {
 	".....###",
 	".....sss",
 	"........"
-	
 };
-char name[10] = {"________"};
-//load bearing coconut
-
-void resetNameField(void);
 
 
-void printDecimal(int32_t Value);
-void initSerial();
 
 
-//Controls functions
-int rightpressed();
-int leftpressed();
-int downpressed();
-int uppressed();
-int altPressed();//ALT Button
-void redLED(int);//LED control function, 1 for on, 0 for off
 
-//Aux Functions
-void drawcomputer(int x, int y, int Scolor);//Draws a computer at the given x and y coordinates. Color specifies color of the screen
-int checkpos(int x, int y);//Function to check the current player pos. Returns 0 for empty, 1 for cheater(LED turns on), 2 for student and restore the image.
-int GameMenu();
-int PlayGame(int);
-void Getname();
-//lwk need a new name for this one
-//-----------------
-int checkpos2(int x, int y);//Function to check the current player pos. Returns 0 for empty, 1 for cheater, 2 for student. This one doesnt restore
-//-----------------
-
-int drawmap();// Function to draw the map
-void displayScore(int);// Function to display the score on the screen
-int AttemptCheater(int);//Function attempts to select a cheater with a 10% chance. Returns 1 if successful, 0 if not.
-
-int main()
-{
-	//Starting position of the player
-
-//	int SelectedComputer = rand() % ComputerCount;
-
+int main() {
+	int highscore = 0;
+	int buffer = 0;
+	
+	// systems init
 	initClock();
 	initSound();
-
 	initSysTick();
 	setupIO();
 	initSerial();
-	fillRectangle(0,0,127,165,RGBToWord(0,0,0));
-	int number = 0;
-	int buffer = 0;
-	
 
-//Game menu section
-	while (1)
-	{
+	fillRectangle(0,0,127,165,RGBToWord(0,0,0)); // set screen to black
 
-	
-		buffer = GameMenu();
-		switch (buffer)
-		{
-		case 0:
-			eputs("Starting the Game\n");
-			buffer = PlayGame(number);
-			if(buffer > number)
-			{
-				number = buffer;
-			}
-			break;
-		case 1:
-			eputs("Display Highscore\n");
-			fillRectangle(0,0,127,165,RGBToWord(0,0,0));
-			printText("Current Highscore:", 1, 20, RGBToWord(225,225,225), RGBToWord(0,0,0));
-			printText(name, 1, 30, RGBToWord(225,225,225), RGBToWord(0,0,0));
-			printNumber(number, 80, 30, RGBToWord(225,225,225), RGBToWord(0,0,0));
+	//Game menu section
+	while (1) {
+		buffer = GameMenu(); // call main menu function
+		
+		// act on main menu selection
+		switch (buffer) {
 
-			while(!rightpressed() && !leftpressed())
-			{}
-			break;
-	
-		default:
-			fillRectangle(0,0,128,165,RGBToWord(0,0,0));
-			break;
-		}
+			case 0:
+				// run the game
+				eputs("Starting the Game\n"); // serial output
+				buffer = PlayGame(highscore);
+				if(buffer > highscore) { // update high score if necessary
+					highscore = buffer;
+				} // if
+				break;
+
+			case 1:
+				// view the high score
+				eputs("Display Highscore\n"); // serial output
+				fillRectangle(0,0,127,165,RGBToWord(0,0,0));
+				printText("Current Highscore:", 1, 20, RGBToWord(225,225,225), RGBToWord(0,0,0));
+				printText(name, 1, 30, RGBToWord(225,225,225), RGBToWord(0,0,0));
+				printNumber(highscore, 80, 30, RGBToWord(225,225,225), RGBToWord(0,0,0));
+
+				while(!rightpressed() || !leftpressed()) {} // hold until left and right are pressed
+				break;
+
+		} // switch
 		fillRectangle(0,0,128,165,RGBToWord(0,0,0));
-	}
-
-
-//Game init	
-
-
-	//printNumber((int)PCmap[y/16][x/16], 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
-
-
-	
-
-
-//Game loop
-
+	} // while
 
 	return 0;
-}
+} // main
 
 
-//Game
 
-int PlayGame(int highscore)
-{
-	int chune = 0;
-	int NoteCount = sizeof(notes)/sizeof(int);
-	uint16_t x = 65;
-	uint16_t y = 17;
-	int score = 0;
-	int CheaterCount = 0;
-	int StudentCount = drawmap();
+
+
+// Runs the game. Takes the current highscore as argument to see if surpassed
+int PlayGame(int highscore) {
+
+	int tune = 0;							   // current note of the soundtrack to play
+	int NoteCount = sizeof(notes)/sizeof(int); // amount of notes in the soundtrack
+	uint16_t x = 65;						   // player's x coordinate
+	uint16_t y = 17;						   // player's y coordinate
+	int score = 0;							   // current score
+	int CheaterCount = 0;					   // amount of cheaters
+	int StudentCount = drawmap();			   // amount of students
 	int buffer = 0;
-	milliseconds = 0;
+	milliseconds = 0;						   // sets the global clock back to 0
 
-	drawmap();
-	putImage(x,y,15,15,teachH, 1, 0);
+	drawmap();						  // draw the global map
+	putImage(x,y,15,15,teachV, 0, 0); // draw the player character
 	delay(50);
-	redLED(0);
+	redLED(0);						  // set the LED to off
 
 
 
-	while(milliseconds < 30000){
+	// main game loop
+	while( milliseconds < (TIME_LIMIT*1000) ) {
 
+		// soundtrack
+		// if current note has played for long enough, move to next
+		if (milliseconds % BEAT_MS == 0) {
+			playNote((notes[tune]));
+			tune = (tune + 1) % NoteCount; // increment to next note and loop if end reached
+		} // if
 
-//MUSIC
-		if(milliseconds % BPM == 0)
-		{
-			playNote((notes[chune]));
-			chune = (chune + 1) % NoteCount;
-		}
+		displayScore(score); // display score at top of screen
 
+		if (StudentCount == 0 && CheaterCount == 0) { // check if every student was killed
 
+			score = score + (TIME_LIMIT-(milliseconds/1000)); // add remaining time to the score
+			fillRectangle(0,0,128,165,RGBToWord(0,0,0)); // clear screen
 
-		if(StudentCount == 0 && CheaterCount == 0)
-		{
-			score = score + (60000-milliseconds);
-			fillRectangle(0,0,128,165,RGBToWord(0,0,0));
+			// display score
 			printText("Score:", 33, 40, RGBToWord(225,225,225), RGBToWord(0,0,0));
 			printNumber(score, 75, 40, RGBToWord(225,0,0), RGBToWord(0,0,0));
-			playNote(0);
-			redLED(0);
-			if(score > highscore)
-			{	printText("New Highscore!", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));	
+
+			playNote(0); // turn off speaker
+			redLED(0);   // turn off LED
+
+			if(score > highscore) { // check if score was higher than high score
+				printText("New Highscore!", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));	
 				printText("Type your name:", 1, 90, RGBToWord(225,225,225), RGBToWord(0,0,0));
-				Getname();
-			}	
+				Getname(); // update record holder name
+			} else {
+				printText("Press ALT for menu", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));
+				while(!altpressed()) {} // hold until alt pressed
+			} // if/else
+
 			delay(500);
 			return score;
-		}
-		if((CheaterCount < 3 && StudentCount != 0 ) && (milliseconds%(MVE_DELAY*5)==0))
-		{
-			displayScore(score);
-			buffer = AttemptCheater(StudentCount);
-			StudentCount = StudentCount - buffer;
-			CheaterCount = CheaterCount + buffer;
-		}
+		} // if
 
-		if(altPressed() && checkpos2(x,y) == 1)
-		{
+		// attempt to add a new cheater if below the limit and there are still students left
+		if ((CheaterCount < CHEAT_LIMIT && StudentCount != 0 ) && (milliseconds%(MVE_DELAY*5)==0)) {
+			buffer = AttemptCheater(StudentCount);
+			StudentCount -= buffer;
+			CheaterCount += buffer;
+		} // if
+
+		// attempt to kill any cheater the player might be hovering over
+		if(altpressed() && checkpos(x,y) == 1) {
 			CheaterCount -= 1;
 			score += 1;
-			PCmap[y/16][x/16] = '-';
+			PCmap[y/16][x/16] = '-'; // update cheater to dead student
 			drawcomputer(x, (y-16), RGBToWord(0,0,255));
 			playNote(C5);
-			redLED(0);
-		}
+			redLED(0); // turn off the LED
+		} // if
 
-	//Movement section.
-		if(uppressed() && (milliseconds%MVE_DELAY==0))
-		{
+		// movement section
+		// player can move one grid square per game tick
+		if(uppressed() && (milliseconds%MVE_DELAY==0)) { // upwards movement
 
-			if ((y - 16) < 17)
-				{y = 17;}
-			else{
-				checkpos(x,y);
-				y=y-16;}
+			if ((y - 16) < 17) { // stop player moving out of bounds
+				y = 17;
+				eputchar('1');
+			} else {
+				if (checkLED(x,y) == 1) { // light up LED if player is standing on a cheater
+					redLED(1);
+				} else {
+					redLED(0);
+				} // if/else
+				y = y - 16; // update position
+			} // if/else
 
-			if(PCmap[(y/16)][(x/16)]  == '#')
-				{y = y + 16;}
+			if (PCmap[(y/16)][(x/16)]  == '#') { // stop the player moving over a computer
+				y = y + 16;
+				eputchar('2');
+			} // if
 
-			checkpos(x,y);
-			putImage(x,y,15,15,teachV, 0, 1);
-		}
-		if(downpressed() && (milliseconds%MVE_DELAY==0))
-		{
+			if (checkLED(x,y) == 1) { // update LED
+				redLED(1);
+			} else {
+				redLED(0);
+			} // if/else
 
-			if ((y + 16) > 145)
-				{y = 145;
-				}
-			else{
-				checkpos(x,y);
-				y=y+16;
-				}
+			putImage(x,y,15,15,teachV, 0, 1); // draw teacher on new position
 
-			if(PCmap[(y/16)][(x/16)]  == '#')
-				{y = y - 16;}
+		} // if
 
-			checkpos(x,y);
-			putImage(x,y,15,15,teachV, 0, 0);
-		}
-		if (leftpressed() && (milliseconds%MVE_DELAY==0))
-		{
+		if(downpressed() && (milliseconds%MVE_DELAY==0)) { // downwards movement
 
-			if ((x - 16) < 1)
-				{x = 1;}
-			else{
-				checkpos(x,y);
-				x=x-16;}
+			if ((y + 16) > 145) { // stop player moving out of bounds
+				y = 145;
+				eputchar('1');
+			} else {
+				if (checkLED(x,y) == 1) { // light up LED if player is standing on a cheater
+					redLED(1);
+				} else {
+					redLED(0);
+				} // if/else
+				y = y + 16; // update position
+			} // if/else
 
-			if(PCmap[(y/16)][(x/16)]  == '#')
-				{x = x + 16;}
+			if(PCmap[(y/16)][(x/16)]  == '#') { // stop the player moving over a computer
+				y = y - 16;
+				eputchar('2');
+			} // if
 
-			checkpos(x,y);	
-			putImage(x,y,15,15,teachH, 0, 0);
-		}
-		if (rightpressed()  && (milliseconds%MVE_DELAY==0))
-		{
-			if ((x + 16) > 113)
-				{x = 113;
-				}
-			else{
-				checkpos(x,y);
-				x=x+16;
-				}
+			if (checkLED(x,y) == 1) { // update LED
+				redLED(1);
+			} else {
+				redLED(0);
+			} // if/else
 
-			if(PCmap[(y/16)][(x/16)]  == '#')
-				{x = x - 16;
-				}
+			putImage(x,y,15,15,teachV, 0, 0); // draw teacher on new position
 
-			checkpos(x,y);
-			putImage(x,y,15,15,teachH, 1, 0);
-		}
-		if((rightpressed() && leftpressed() && altPressed()))
-		{
-			playNote(0);
+		} // if
+
+		if (leftpressed() && (milliseconds%MVE_DELAY==0)) { // leftwards movement
+
+			if ((x - 16) < 1) { // stop the player moving out of bounds
+				x = 1;
+				eputchar('1');
+			} else {
+				if (checkLED(x,y) == 1) { // light up LED if player is standing on a cheater
+					redLED(1);
+				} else {
+					redLED(0);
+				} // if/else
+				x = x - 16; // update position
+			} // if/else
+
+			if(PCmap[(y/16)][(x/16)]  == '#') { // stop the player moving over a computer
+				x = x + 16;
+				eputchar('2');
+			} // if
+
+			if (checkLED(x,y) == 1) { // update LED
+				redLED(1);
+			} else {
+				redLED(0);
+			} // if/else
+
+			putImage(x,y,15,15,teachH, 0, 0); // draw teacher on new position
+
+		} // if
+
+		if (rightpressed() && (milliseconds%MVE_DELAY==0)) { // rightwards movement
+
+			if ((x + 16) > 113) { // stop the player moving out of bounds
+				x = 113;
+				eputchar('1');
+			} else {
+				if (checkLED(x,y) == 1) { // light up LED if player is standing on a cheater
+					redLED(1);
+				} else {
+					redLED(0);
+				} // if/else
+				x = x + 16; // update position
+			} // if/else
+
+			if(PCmap[(y/16)][(x/16)]  == '#') { // stop the player moving over a computer
+				x = x - 16;
+				eputchar('2');
+			} // if
+
+			if (checkLED(x,y) == 1) { // update LED
+				redLED(1);
+			} else {
+				redLED(0);
+			} // if/else
+
+			putImage(x,y,15,15,teachH, 1, 0); // draw teacher on new position
+
+		} // if
+
+		// exit to main menu
+		if((rightpressed() && leftpressed() && altpressed())) {
+			playNote(0); // turn off speaker
 			delay(500);
 			return score;
+		} // if
 
-		}
+	} // while - main game loop
 
 
-	}
+
+	// end game screen
 	fillRectangle(0,0,128,165,RGBToWord(0,0,0));
 	printText("Time's up!", 33, 20, RGBToWord(225,225,225), RGBToWord(0,0,0));
 	printText("Score:", 1, 40, RGBToWord(225,225,225), RGBToWord(0,0,0));
 	printNumber(score, 65, 40, RGBToWord(225,0,0), RGBToWord(0,0,0));
-	playNote(0);
-	redLED(0);
-	if(score > highscore)
-		{	
-			printText("New Highscore!", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));	
-			printText("Type your name:", 1, 90, RGBToWord(225,225,225), RGBToWord(0,0,0));
-			Getname();		
-		}
-	else
-		{
-			printText("Press ALT for menu", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));
-			while(!altPressed())
-			{}
-		}
+	playNote(0); // turn off speaker
+	redLED(0);	 // turn off LED
+
+	if(score > highscore) {	
+		printText("New Highscore!", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));	
+		printText("Type your name:", 1, 90, RGBToWord(225,225,225), RGBToWord(0,0,0));
+		Getname(); // upade record holder name
+	} else {
+		printText("Press ALT for menu", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));
+		while(!altpressed()) {} // hold until alt pressed
+	} // if/else
+
 	delay(500);
 	return score;
-}
+} // PlayGame
 
 
 
 
 
-
-
-
-
-
-
-
-//Game relatred functions
-
-int drawmap()
-{
-	int temp = 0;
+// draws the game layout on screen based on the global array, also resets dead or cheating students
+int drawmap() {
+	int student_count = 0;
 	fillRectangle(0,0,127,165,RGBToWord(0,0,0));
-	for(int Row = 0; Row < 10; Row++)
-	{
-		for(int Col = 0; Col < 8; Col++)
-		{
+
+	for(int Row = 0; Row < 10; Row++) {
+		for(int Col = 0; Col < 8; Col++) {
+
 			switch(PCmap[Row][Col]) {
 				case '#':
-					drawcomputer((Col*16)+1, (Row*16)+1, RGBToWord(0,225,0));
+					drawcomputer((Col*16)+1, (Row*16)+1, RGBToWord(225,0,0));
 					break;
 				case 's':
 					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
-					temp++;
+					student_count++;
 					break;
 				case '!':
 					PCmap[Row][Col] = 's';
 					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
-					temp++;
+					student_count++;
 					break;
 				case '-':
 					PCmap[Row][Col] = 's';
 					putImage(((Col)*16)+1, ((Row)*16)+1, 15, 15, studentV, 0, 0);
-					temp++;
+					student_count++;
 					break;
-			}
+			} // switch
 
-		}
-	}
-	return temp;
-}
+		} // for
+	} // for
 
-int AttemptCheater(int x)// 33.33333333333% chance to select a cheater out of availibe students. Returns 1 if successful, 0 if not.
-{
-	int temp = 0;
-	if(rand() % 3 == 1)
-	{
-		x = rand() % x;
+	return student_count; // return amount of students in map layout
 
+} // drawmap
 
-		for (int Row = 0; Row < 10; Row++)
-			{
-				for(int Col = 0; Col < 8; Col++)
-					{
-						if(temp == x && PCmap[Row][Col] == 's')
-						{
-							drawcomputer((Col)*16+1, (Row-1)*16+1, RGBToWord(225, 0, 0));
-							PCmap[Row][Col] = '!';
-							return 1;
-						}
-						else if (PCmap[Row][Col] == 's')
-						{
-							temp++;
-						}
-						
-					}
-			}
-			
+// 33% chance to select a cheater out of availibe students. Returns 1 if successful, 0 if not.
+int AttemptCheater(int x) {
+	// x is initially amount of available students
+	int increment = 0; // increments until the selected student is reached
 
+	// attempts to create a cheater
+	if(rand() % 3 == 1) {
+		x = rand() % x; // select random student
 
-	}
-	else
-	{
+		for (int Row = 0; Row < 10; Row++) {
+			for(int Col = 0; Col < 8; Col++) {
+
+				if(increment == x && PCmap[Row][Col] == 's') { // selected student found
+					drawcomputer((Col)*16+1, (Row-1)*16+1, RGBToWord(225, 0, 0)); // change cheater's screen color
+					PCmap[Row][Col] = '!'; // update cheater on map
+					return 1;
+				} else if (PCmap[Row][Col] == 's') {
+						increment++;
+				} // if/elseif
+
+			} // for
+		} // for
+
+	} else {
+		// failed to create cheater
 		return 0;
-	}
-}
+	} // if/else
 
-void Getname()
-{
-	resetNameField();
-	while (1)
-	{
+} // AttemptCheater
+
+// updates the name of the record holder
+void Getname() {
+	resetNameField(); // clear name
+	
+	while (1) {
 		fillRectangle(1,100,127,30,RGBToWord(0,0,0));
 		printText(name, 1, 100, RGBToWord(225,225,225), RGBToWord(0,0,0));
-		printText("UP to Y, DOWN to N", 1, 110, RGBToWord(225,225,225), RGBToWord(0,0,0));
+		printText("UP for accept, DOWN for reset", 1, 110, RGBToWord(225,225,225), RGBToWord(0,0,0));
 		delay(200);
-		for(int i = 0; i < 9; i++)
-		{
+
+		// get player name from Serial Input, pressing enter confirms
+		for (int i = 0; i < 9; i++) {
 			name[i] = egetchar();
-				if(name[i] == '\n')
-				{
-					name[i] = '\0';
-					return;
-				}
+
+			if (name[i] == '\n') {
+				name[i] = '\0';
+				break;
+			} // if
+
 			fillRectangle(1,100,127,10,RGBToWord(0,0,0));
 			printText(name, 1, 100, RGBToWord(225,225,225), RGBToWord(0,0,0));
-		}
+		} // for
 		name[9] = '\0';
 
-		while(1)
-		{
-			if(uppressed())
-			{
+		// approve or disapprove entered name
+		while(1) {
+			if (uppressed()) { // approved
 				return;
-			}
+			} // if
 
-			if(downpressed())
-			{
-				resetNameField();
+			if (downpressed()) { // disapproved
+				resetNameField(); // reset field
 				fillRectangle(1,100,127,10,RGBToWord(0,0,0));
 				printText(name, 1, 100, RGBToWord(225,225,225), RGBToWord(0,0,0));
 				delay(200);
 				break;
-			}
-		}
+			} // if
+		} // while
 
-		
-	}
-}
+	} // while
+} // Getname
 
-void resetNameField(void)
-{
-	for(int i = 0; i < 9; i++)
-	{
+// resets the name of the record holder
+void resetNameField() {
+	for(int i = 0; i < 9; i++) {
 		name[i] = '_';
-	}
+	} // for
 	name[9] = '\0';
-}
+} // resetNameField
 
-int altPressed(){
+// alt button check
+int altpressed() {
 	return (GPIOB->IDR & (1 << 0))==0;
-}
-int rightpressed()
-{
+} // altpressed
+
+// right button check
+int rightpressed() {
 	return (GPIOB->IDR & (1 << 4))==0;
-}
-int leftpressed()
-{
-	return (GPIOB->IDR & (1 << 5))==0;	
-}
-int downpressed()
-{
+} // rightpressed
+
+// left button check
+int leftpressed() {
+	return (GPIOB->IDR & (1 << 5))==0;
+} // leftpressed
+
+// down button check
+int downpressed() {
 	return (GPIOA->IDR & (1 << 11)) == 0;
-}
-int uppressed()
-{
+} // downpressed
+
+// up button check
+int uppressed() {
 	return (GPIOA->IDR & (1 << 8)) == 0;
-}
+} // uppressed
 
-void redLED(int e)
-{
-	if (e == 1)
-	{
+// turns the LED on or off
+void redLED(int on) {
+	if (on == 1) {
 		GPIOA->ODR |= (1 << 0);
-	}
-	else{
+	} else {
 		GPIOA->ODR &= ~(1 << 0);
-	}
-	
-}
+	} // if/else
+} // redLED
 
-void drawcomputer(int x, int y, int Scolor)
-{
+// function to draw a computer, with arguments for colour rather than coding in sprites
+void drawcomputer(int x, int y, int Scolor) {
 	drawRectangle(x+2,y+1,11,7,RGBToWord(128,128,128));
 	fillRectangle(x+3,y+2,10,6, Scolor);
 	fillRectangle(x+6,y+9,5, 2,RGBToWord(128,128,128));
-
 	fillRectangle(x+3,y+12,10,2,RGBToWord(128,128,128));
-}
-int checkpos(int x, int y)
-{
-				switch(PCmap[y/16][x/16]) {
-				case 's':
-					putImage(x, y, 15, 15, studentV, 0, 0);
-					redLED(0);
-					return 2;
-					break;
-				case '!':
-					putImage(x, y, 15, 15, studentV, 0, 0);
-					redLED(1);
-					return 1;
-					break;
-				case '-':
-					putImage(x,y, 15,15, blud, 0, 0);
-					break;
-				default:
-					redLED(0);
-					fillRectangle(x,y,15,15,RGBToWord(0,0,0));
-					return 0;
-					break;
-			}
-}
-int checkpos2(int x, int y)
-{
-				switch(PCmap[y/16][x/16]) {
-				case 's':
-					return 2;
-					break;
-				case '!':
-					return 1;
-					break;
-				case '-':
-					return 3;
-					break;
-				default:
-					return 0;
-					break;
-			}
-}
+} // drawcomputer
 
-void displayScore(int score)
-{
+// checks whether the LED should be turned on
+// return values based on map characters
+int checkLED(int x, int y) {
+	switch(PCmap[y/16][x/16]) {
+		case 's':
+			putImage(x, y, 15, 15, studentV, 0, 0);
+			eputchar('s');
+			return 2;
+			break;
+		case '!':
+			eputchar('!');
+			return 1;
+			break;
+		case '-':
+			fillRectangle(x,y,15,15,RGBToWord(0,0,225));
+			eputchar('-');
+			break;
+		default:
+			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
+			eputchar('.');
+			return 0;
+			break;
+	} // switch
+} // checkLED
+
+// check what what entity the player is standing over, without drawing over anything
+int checkpos(int x, int y) {
+	switch(PCmap[y/16][x/16]) {
+		case 's':
+			return 2;
+			break;
+		case '!':
+			return 1;
+			break;
+		case '-':
+			return 3;
+			break;
+		default:
+			return 0;
+			break;
+	} // switch
+} // checkpos
+
+// displays the current score at the top of the screen
+void displayScore(int score) {
 	printText("Score:", 1, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
 	printNumber(score, 45, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
-}
+} // displayScore
 
-int GameMenu()
-{
-	uint16_t CntSelection = 0;
-	printText("CA Trials", 33, 1, RGBToWord(225,225,225), RGBToWord(0,0,0));
+// handles the main menu, returns 0 if the player selected start game, 1 if the player selected high score
+int GameMenu() {
+	uint16_t CntSelection = 0; // current selection
+	printText("CA Trials", 33, 1, RGBToWord(225,225,225), RGBToWord(0,0,0)); // title
 	
-	while (1)
-	{
-	
-	
-		if (downpressed() && (milliseconds%MVE_DELAY==0))
-		{
+	while (1) {
+		// menu navigation
+		if (downpressed() && (milliseconds%MVE_DELAY==0)) {
 			CntSelection = (CntSelection + 1) % 2;
 			delay(200);
-		}
-		if (uppressed() && (milliseconds%MVE_DELAY==0))
-		{
+		} // if
+		if (uppressed() && (milliseconds%MVE_DELAY==0)) {
 			CntSelection = (CntSelection - 1) % 2;
 			delay(200);
-		}
+		} // if
 		
-		if((milliseconds%(MVE_DELAY)*2.5==0))
-		{
-			switch(CntSelection)
-			{
+		// option selection
+		if((milliseconds%(MVE_DELAY)*2.5==0)) {
+			switch(CntSelection) {
 				case 0:
+					// select game start
 					printText("Start", 33, 20, RGBToWord(225,0,0), RGBToWord(0,0,0));
 					printText("Highscore", 33, 40, RGBToWord(128,128,128), RGBToWord(0,0,0));
-					if(altPressed())
-					{return 0;}
+					if(altpressed()) { return 0; }
 					break;
 				case 1:
+					 // select view high score
 					printText("Start", 33, 20, RGBToWord(128,128,128), RGBToWord(0,0,0));
 					printText("Highscore", 33, 40, RGBToWord(225,0,0), RGBToWord(0,0,0));
-					if(altPressed())
-					{return 1;}
+					if(altpressed()) { return 1; }
 					break;
-			}
+			} // switch
+		} // if
+	} // while
+} // GameMenu
 
-		}
 
-	}
-}
+
+
+
+
+
+
+
+
+
 
 
 // System Functions
