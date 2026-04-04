@@ -202,8 +202,8 @@ int PlayGame(int highscore) {
 
 		// attempt to kill any cheater the player might be hovering over
 		if (altpressed() && checkpos(x,y) == 1) {
-			CheaterCount -= 1;
-			score += 1;
+			CheaterCount--;
+			score++;
 			PCmap[y/16][x/16] = '-'; // update cheater to dead student
 			drawcomputer(x, (y-16), RGBToWord(0,0,255));
 			playNote(C5);
