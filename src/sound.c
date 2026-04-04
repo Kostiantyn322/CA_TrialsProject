@@ -12,6 +12,7 @@ void playNote(uint32_t Freq)
 void initSound()
 {
 	// Power up the timer module
+	RCC->AHBENR |= (1 << 18); // enable GPIOB
 	RCC->APB1ENR |= (1 << 8);
 	pinMode(GPIOB,1,2); // Assign a non-GPIO (alternate) function to GPIOB bit 1
 	GPIOB->AFR[0] &= ~(0x0fu << 4); // Assign alternate function 0 to GPIOB 1 (Timer 14 channel 1)
