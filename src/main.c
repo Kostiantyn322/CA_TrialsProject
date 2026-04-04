@@ -109,7 +109,7 @@ int main() {
 				// run the game
 				eputs("Starting the Game\n"); // serial output
 				buffer = PlayGame(highscore);
-				if(buffer > highscore) { // update high score if necessary
+				if (buffer > highscore) { // update high score if necessary
 					highscore = buffer;
 				} // if
 				break;
@@ -122,7 +122,7 @@ int main() {
 				printText(name, 1, 30, RGBToWord(225,225,225), RGBToWord(0,0,0));
 				printNumber(highscore, 80, 30, RGBToWord(225,225,225), RGBToWord(0,0,0));
 
-				while(!rightpressed() || !leftpressed()) {} // hold until left and right are pressed
+				while (!rightpressed() || !leftpressed()) {} // hold until left and right are pressed
 				break;
 
 		} // switch
@@ -157,7 +157,7 @@ int PlayGame(int highscore) {
 
 
 	// main game loop
-	while( milliseconds < (TIME_LIMIT*1000) ) {
+	while ( milliseconds < (TIME_LIMIT*1000) ) {
 
 		// soundtrack
 		// if current note has played for long enough, move to next
@@ -180,7 +180,7 @@ int PlayGame(int highscore) {
 			playNote(0); // turn off speaker
 			redLED(0);   // turn off LED
 
-			if(score > highscore) { // check if score was higher than high score
+			if (score > highscore) { // check if score was higher than high score
 				printText("New Highscore!", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));	
 				printText("Type your name:", 1, 90, RGBToWord(225,225,225), RGBToWord(0,0,0));
 				Getname(); // update record holder name
@@ -201,7 +201,7 @@ int PlayGame(int highscore) {
 		} // if
 
 		// attempt to kill any cheater the player might be hovering over
-		if(altpressed() && checkpos(x,y) == 1) {
+		if (altpressed() && checkpos(x,y) == 1) {
 			CheaterCount -= 1;
 			score += 1;
 			PCmap[y/16][x/16] = '-'; // update cheater to dead student
@@ -212,7 +212,7 @@ int PlayGame(int highscore) {
 
 		// movement section
 		// player can move one grid square per game tick
-		if(uppressed() && (milliseconds%MVE_DELAY==0)) { // upwards movement
+		if (uppressed() && (milliseconds%MVE_DELAY==0)) { // upwards movement
 
 			if ((y - 16) < 17) { // stop player moving out of bounds
 				y = 17;
@@ -241,7 +241,7 @@ int PlayGame(int highscore) {
 
 		} // if
 
-		if(downpressed() && (milliseconds%MVE_DELAY==0)) { // downwards movement
+		if (downpressed() && (milliseconds%MVE_DELAY==0)) { // downwards movement
 
 			if ((y + 16) > 145) { // stop player moving out of bounds
 				y = 145;
@@ -329,7 +329,7 @@ int PlayGame(int highscore) {
 		} // if
 
 		// exit to main menu
-		if((rightpressed() && leftpressed() && altpressed())) {
+		if ( rightpressed() && leftpressed() && altpressed() ) {
 			playNote(0); // turn off speaker
 			delay(500);
 			return score;
@@ -347,13 +347,13 @@ int PlayGame(int highscore) {
 	playNote(0); // turn off speaker
 	redLED(0);	 // turn off LED
 
-	if(score > highscore) {	
+	if (score > highscore) {	
 		printText("New Highscore!", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));	
 		printText("Type your name:", 1, 90, RGBToWord(225,225,225), RGBToWord(0,0,0));
 		Getname(); // upade record holder name
 	} else {
 		printText("Press ALT for menu", 1, 80, RGBToWord(225,225,225), RGBToWord(0,0,0));
-		while(!altpressed()) {} // hold until alt pressed
+		while (!altpressed()) {} // hold until alt pressed
 	} // if/else
 
 	delay(500);
@@ -369,10 +369,10 @@ int drawmap() {
 	int student_count = 0;
 	fillRectangle(0,0,127,165,RGBToWord(0,0,0));
 
-	for(int Row = 0; Row < 10; Row++) {
+	for (int Row = 0; Row < 10; Row++) {
 		for(int Col = 0; Col < 8; Col++) {
 
-			switch(PCmap[Row][Col]) {
+			switch (PCmap[Row][Col]) {
 				case '#':
 					drawcomputer((Col*16)+1, (Row*16)+1, RGBToWord(225,0,0));
 					break;
@@ -405,11 +405,11 @@ int AttemptCheater(int x) {
 	int increment = 0; // increments until the selected student is reached
 
 	// attempts to create a cheater
-	if(rand() % 3 == 1) {
+	if (rand() % 3 == 1) {
 		x = rand() % x; // select random student
 
 		for (int Row = 0; Row < 10; Row++) {
-			for(int Col = 0; Col < 8; Col++) {
+			for (int Col = 0; Col < 8; Col++) {
 
 				if(increment == x && PCmap[Row][Col] == 's') { // selected student found
 					drawcomputer((Col)*16+1, (Row-1)*16+1, RGBToWord(225, 0, 0)); // change cheater's screen color
@@ -473,7 +473,7 @@ void Getname() {
 
 // resets the name of the record holder
 void resetNameField() {
-	for(int i = 0; i < 9; i++) {
+	for (int i = 0; i < 9; i++) {
 		name[i] = '_';
 	} // for
 	name[9] = '\0';
@@ -524,7 +524,7 @@ void drawcomputer(int x, int y, int Scolor) {
 // checks whether the LED should be turned on
 // return values based on map characters
 int checkLED(int x, int y) {
-	switch(PCmap[y/16][x/16]) {
+	switch (PCmap[y/16][x/16]) {
 		case 's':
 			putImage(x, y, 15, 15, studentV, 0, 0);
 			eputchar('s');
@@ -548,7 +548,7 @@ int checkLED(int x, int y) {
 
 // check what what entity the player is standing over, without drawing over anything
 int checkpos(int x, int y) {
-	switch(PCmap[y/16][x/16]) {
+	switch (PCmap[y/16][x/16]) {
 		case 's':
 			return 2;
 			break;
@@ -587,19 +587,19 @@ int GameMenu() {
 		} // if
 		
 		// option selection
-		if((milliseconds%(MVE_DELAY)*2.5==0)) {
+		if ( milliseconds%(MVE_DELAY)*2.5==0 ) {
 			switch(CntSelection) {
 				case 0:
 					// select game start
 					printText("Start", 33, 20, RGBToWord(225,0,0), RGBToWord(0,0,0));
 					printText("Highscore", 33, 40, RGBToWord(128,128,128), RGBToWord(0,0,0));
-					if(altpressed()) { return 0; }
+					if (altpressed()) { return 0; }
 					break;
 				case 1:
-					 // select view high score
+					// select view high score
 					printText("Start", 33, 20, RGBToWord(128,128,128), RGBToWord(0,0,0));
 					printText("Highscore", 33, 40, RGBToWord(225,0,0), RGBToWord(0,0,0));
-					if(altpressed()) { return 1; }
+					if (altpressed()) { return 1; }
 					break;
 			} // switch
 		} // if
