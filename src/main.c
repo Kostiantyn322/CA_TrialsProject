@@ -531,12 +531,14 @@ int checkLED(int x, int y) {
 			return 2;
 			break;
 		case '!':
+			putImage(x, y, 15, 15, studentV, 0, 0);
 			eputchar('!');
 			return 1;
 			break;
 		case '-':
-			fillRectangle(x,y,15,15,RGBToWord(0,0,225));
+			putImage(x, y, 15, 15, blud, 0, 0);
 			eputchar('-');
+			return 3;
 			break;
 		default:
 			fillRectangle(x,y,15,15,RGBToWord(0,0,0));
